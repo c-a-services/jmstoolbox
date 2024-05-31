@@ -17,15 +17,14 @@
 package org.titou10.jtb.handler;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.xml.bind.JAXBException;
+
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
@@ -205,12 +204,12 @@ public class MessageSendHandler {
                            switch (type) {
                               case BYTES:
                                  template.setJtbMessageType(JTBMessageType.BYTES);
-                                 template.setPayloadBytes(Files.readAllBytes(Paths.get(fileName)));
+                                 template.setPayloadBytes(Utils.readFileBytes(fileName));
                                  break;
 
                               default:
                                  template.setJtbMessageType(JTBMessageType.TEXT);
-                                 template.setPayloadText(new String(Files.readAllBytes(Paths.get(fileName))));
+                                 template.setPayloadText(Utils.readFileText(fileName));
                                  break;
                            }
                         }
