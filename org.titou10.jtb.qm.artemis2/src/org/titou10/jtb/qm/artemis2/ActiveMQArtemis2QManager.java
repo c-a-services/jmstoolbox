@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2024 Denis Forveille titou10.titou10@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,8 +109,15 @@ public class ActiveMQArtemis2QManager extends QManager {
                                           false,
                                           "Use an SSL netty acceptor to connect to the server?",
                                           null));
-      parameters.add(new QManagerProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, false, JMSPropertyKind.STRING));
+      parameters.add(new QManagerProperty(TransportConstants.KEYSTORE_ALIAS_PROP_NAME, false, JMSPropertyKind.STRING));
+      parameters.add(new QManagerProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, false, JMSPropertyKind.STRING, true));
+      parameters.add(new QManagerProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME, false, JMSPropertyKind.STRING, true));
+      parameters.add(new QManagerProperty(TransportConstants.KEYSTORE_TYPE_PROP_NAME, false, JMSPropertyKind.STRING, true));
+
       parameters.add(new QManagerProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, false, JMSPropertyKind.STRING, true));
+      parameters.add(new QManagerProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, false, JMSPropertyKind.STRING));
+      parameters.add(new QManagerProperty(TransportConstants.TRUSTSTORE_TYPE_PROP_NAME, false, JMSPropertyKind.STRING, true));
+
       parameters
                .add(new QManagerProperty(P_EXTRA_PROPERTIES,
                                          false,
@@ -147,10 +154,18 @@ public class ActiveMQArtemis2QManager extends QManager {
 
          String httpEnabled = mapProperties.get(TransportConstants.HTTP_ENABLED_PROP_NAME);
          String httpUpgradeEnabled = mapProperties.get(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME);
+         String extraNettyProperties = mapProperties.get(P_EXTRA_PROPERTIES);
+
          String sslEnabled = mapProperties.get(TransportConstants.SSL_ENABLED_PROP_NAME);
+
+         String keyStore = mapProperties.get(TransportConstants.KEYSTORE_PATH_PROP_NAME);
+         String keyStorePassword = mapProperties.get(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
+         String keyStoreType = mapProperties.get(TransportConstants.KEYSTORE_TYPE_PROP_NAME);
+         String keyStoreAlias = mapProperties.get(TransportConstants.KEYSTORE_ALIAS_PROP_NAME);
+
          String trustStore = mapProperties.get(TransportConstants.TRUSTSTORE_PATH_PROP_NAME);
          String trustStorePassword = mapProperties.get(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME);
-         String extraNettyProperties = mapProperties.get(P_EXTRA_PROPERTIES);
+         String trustStoreType = mapProperties.get(TransportConstants.TRUSTSTORE_TYPE_PROP_NAME);
 
          String minLargeMessageSize = mapProperties.get(P_CF_MIN_LARGE_MESSAGE_SIZE);
          String compressLargeMessage = mapProperties.get(P_CF_COMPRESS_LARGE_MESSAGE);
@@ -166,11 +181,31 @@ public class ActiveMQArtemis2QManager extends QManager {
             }
          }
 
+         // https://activemq.apache.org/components/artemis/documentation/latest/configuring-transports.html#configuring-netty-ssl
          if (sslEnabled != null) {
             if (Boolean.valueOf(sslEnabled)) {
                connectionParams.put(TransportConstants.SSL_ENABLED_PROP_NAME, "true");
-               connectionParams.put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, trustStore);
-               connectionParams.put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, trustStorePassword);
+               if (keyStore != null) {
+                  connectionParams.put(TransportConstants.KEYSTORE_PATH_PROP_NAME, keyStore);
+               }
+               if (keyStorePassword != null) {
+                  connectionParams.put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, keyStorePassword);
+               }
+               if (keyStoreType != null) {
+                  connectionParams.put(TransportConstants.KEYSTORE_TYPE_PROP_NAME, keyStoreType);
+               }
+               if (keyStoreAlias != null) {
+                  connectionParams.put(TransportConstants.KEYSTORE_ALIAS_PROP_NAME, keyStoreAlias);
+               }
+               if (trustStore != null) {
+                  connectionParams.put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, trustStore);
+               }
+               if (trustStorePassword != null) {
+                  connectionParams.put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, trustStorePassword);
+               }
+               if (trustStoreType != null) {
+                  connectionParams.put(TransportConstants.TRUSTSTORE_TYPE_PROP_NAME, trustStoreType);
+               }
             }
          }
 
@@ -279,28 +314,34 @@ public class ActiveMQArtemis2QManager extends QManager {
 
          log.debug("addressName: {} deliveryMode: {} queues: {}", addressName, deliveryMode, queues);
 
-         // MULTICAST addresses are Topics
          if (deliveryMode.contains("MULTICAST")) {
-            log.debug("addressName: {} is a Topic", addressName);
-            listTopicData.add(new TopicData((String) addressName));
+            if (deliveryMode.contains("ANYCAST")) {
+               // MULTICAST + ANYCAST addresses are Queues
+               log.debug("addressName: {} is a Queue (deliveryMode contains MULTICAST and ANYCAST)", addressName);
+               listQueueData.add(new QueueData((String) addressName));
+            } else {
+               // MULTICAST only addresses are Topics
+               log.debug("addressName: {} is a Topic (deliveryMode contains only MULTICAST)", addressName);
+               listTopicData.add(new TopicData((String) addressName));
+            }
             continue; // DF not sure of this..
          }
 
-         // UNICAST addresses with no queues are ... (I don't know, ignore them)
+         // ANYCAST addresses with no queues are ... (I don't know, ignore them)
          if (queues.length == 0) {
-            log.warn("addressName: {} is UNICAST with no queues, Ignore it.", addressName);
+            log.warn("addressName: {} is ANYCAST with no queues, Ignore it.", addressName);
             continue;
          }
 
-         // UNICAST addresses with one queue with the same name are Queues
+         // ANYCAST addresses with one queue with the same name are Queues
          if ((queues.length == 1) && (queues[0].equals(addressName))) {
-            log.debug("addressName: {} is a Queue", addressName);
+            log.debug("addressName: {} is a Queue (ANYCAST with first queue name the same)", addressName);
             listQueueData.add(new QueueData((String) addressName));
             continue;
          }
 
-         // Other UNICAST adresses are Topics
-         log.debug("addressName: {} is a Topic (UNICAST with Queues that do not match address name", addressName);
+         // Other ANYCAST adresses are Topics
+         log.debug("addressName: {} is a Topic (ANYCAST with first queue that do not match address name", addressName);
          listTopicData.add(new TopicData((String) addressName));
 
          //
@@ -517,10 +558,13 @@ public class ActiveMQArtemis2QManager extends QManager {
       sb.append("- httpUpgradeEnabled : Multiplexing messaging traffic over HTTP").append(CR);
       sb.append(CR);
       sb.append("- sslEnabled         : Use an SSL netty acceptor to connect to the server").append(CR);
-      // sb.append("- keyStorePath : Key store (eg D:/somewhere/trust.jks)").append(CR);
-      // sb.append("- keyStorePassword : Key store password").append(CR);
+      sb.append("- keyStorePath       : Key store (eg D:/somewhere/key.jks)").append(CR);
+      sb.append("- keyStorePassword   : Key store password").append(CR);
+      sb.append("- keyStoreType       : Key store type. For example, JKS, JCEKS, PKCS12, PEM etc.").append(CR);
+      sb.append("- keyStoreAlias      : Alias to select from the SSL key store").append(CR);
       sb.append("- trustStorePath     : Trust store (eg D:/somewhere/trust.jks)").append(CR);
       sb.append("- trustStorePassword : Trust store password").append(CR);
+      sb.append("- trustStoreType     : Trust store type. For example, JKS, JCEKS, PKCS12, PEM etc.").append(CR);
       sb.append(CR);
       sb.append("- z_ExtraNettyProperties : semicolon separated list of netty connector properties").append(CR);
       sb.append("                         : eg \"trustAll=true;tcpNoDelay=true;tcpSendBufferSize=16000\"").append(CR);
