@@ -5,10 +5,10 @@
 - New features:
     - Variables: added a new variable of kind string/UUID and a corresponding system variable
 - Bugs fixed:
-    -
+    - Fixes #188: Short property values are not saved in templates
 - Other:  
-    -
-    
+    - Upgraded Apache Artemis 2.x jars to v2.39.0
+        
 2024-12-06 v7.0.0
 ------------------
 - Important Changes
