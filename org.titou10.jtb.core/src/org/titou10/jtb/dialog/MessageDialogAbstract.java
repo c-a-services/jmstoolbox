@@ -717,13 +717,20 @@ public abstract class MessageDialogAbstract extends Dialog {
       tvMapProperties.setInput(payloadMap);
       Utils.resizeTableViewer(tvMapProperties);
 
-      userProperties = new ArrayList<>();
-      if (template.getJtbProperties() != null) {
-         userProperties.addAll(template.getJtbProperties());
-      }
+      // Properties
+      userProperties = populateProperties(template.getJtbProperties());
+      // userProperties = template.getJtbProperties() == null ? new ArrayList<>() : template.getJtbProperties();
+      // userProperties = new ArrayList<>();
+      // if (template.getJtbProperties() != null) {
+      // userProperties.addAll(template.getJtbProperties());
+      // }
 
       tvProperties.setInput(userProperties);
       Utils.resizeTableViewer(tvProperties);
+   }
+
+   protected List<JTBProperty> populateProperties(List<JTBProperty> props) {
+      return props == null ? new ArrayList<>() : props;
    }
 
    protected void updateTemplate() {
@@ -1128,7 +1135,7 @@ public abstract class MessageDialogAbstract extends Dialog {
             payloadMap.put(name, newMapPropertyValue.getText().trim());
             Map.Entry<String, Object> en = new AbstractMap.SimpleEntry<>(name, newMapPropertyValue.getText().trim());
             tableViewer.add(en);
-            composite4.layout();
+            Display.getDefault().asyncExec(() -> tableViewer.refresh());
             Utils.resizeTableViewer(tableViewer);
          } else {
             MessageDialog.openError(getShell(), "Validation error", String.format(PROPERTY_NAME_INVALID, name));
@@ -1320,8 +1327,7 @@ public abstract class MessageDialogAbstract extends Dialog {
          // Everything Ok
          var p = new JTBProperty(name, value, jmsPropertyKind);
          userProperties.add(p);
-         tableViewer.add(p);
-         parentComposite.layout();
+         Display.getDefault().asyncExec(() -> tableViewer.refresh());
          Utils.resizeTableViewer(tableViewer);
       }));
 

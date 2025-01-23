@@ -202,18 +202,18 @@ public class ConfigManager {
       SplashScreenDialog scd = new SplashScreenDialog();
       int nbSteps = 15; // Nb of steps for the progress bar
 
-      // Use it only on Windows. does not work on Ubuntu (?)
-      if (Utils.isWindows()) {
-         eventBroker.subscribe(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE, new EventHandler() {
-            @Override
-            public void handleEvent(Event event) {
-               scd.close();
-               eventBroker.unsubscribe(this);
-            }
-         });
-         scd.open(nbSteps);
-         context.applicationRunning(); // Close e4 initial splash screen
-      }
+      //// Use it only on Windows. does not work on Ubuntu (?)
+      // if (Utils.isWindows()) {
+      eventBroker.subscribe(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE, new EventHandler() {
+         @Override
+         public void handleEvent(Event event) {
+            scd.close();
+            eventBroker.unsubscribe(this);
+         }
+      });
+      scd.open(nbSteps);
+      context.applicationRunning(); // Close e4 initial splash screen
+      // }
 
       // ------------------------------------------------------
       // Open eclipse project
@@ -529,9 +529,7 @@ public class ConfigManager {
             log.error("Problem when initializing External Connectors '{}'. Skip it", name, e);
             continue;
          }
-         if (o instanceof ExternalConnector) {
-
-            ExternalConnector ec = (ExternalConnector) o;
+         if (o instanceof ExternalConnector ec) {
 
             // Get PP before initializing in case init goes bad, this way user can change the port for example..
             PreferencePage pp = ec.getPreferencePage();
@@ -645,10 +643,9 @@ public class ConfigManager {
             log.error("Problem when instatiating '{}'. Skip it", ice.getNamespaceIdentifier(), e);
             continue;
          }
-         if (o instanceof QManager) {
+         if (o instanceof QManager qm) {
 
             // Update WorkingQManager
-            QManager qm = (QManager) o;
             wqm.setQmanager(qm);
             qm.setName(wqm.getDisplayName());
             log.info("Instantiated Queue Manager '{}'", wqm.getDisplayName());
