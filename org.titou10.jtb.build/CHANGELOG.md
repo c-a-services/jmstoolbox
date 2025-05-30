@@ -1,18 +1,32 @@
-2025-??-?? v7.1#.0
+2025-??-?? v7.2.0
 ------------------
 - Important Changes
     -
 - New features:
+    - Allow variable in user properties and JMS properties of type String (Closes #189 and #186)
+- Bugs fixed:
+   - Fixes #193: Solace/MacOSX: Unable to establish a TLS connection with latest Solace JMS jars
+   - Fixes #191: Artemis v1.x needs "--add-opens" vm params to run with Java 21
+- Other:  
+    - Upgraded Apache Artemis 2.x jars to v2.41.0
+
+2025-03-18 v7.1.0
+------------------
+- New features:
     - Variables: added a new variable of kind string/UUID and a corresponding system variable
 - Bugs fixed:
-    - Fixes #188: Short property values are not saved in templates
+    - Fixes #188: "Short" property values are not saved in templates
 - Other:  
     - Upgraded Apache Artemis 2.x jars to v2.39.0
+    - Upgraded Solace PubSub+ jars to v10.25.2
+    - Upgraded eclipse tycho to v4.0.12 (build system)
+    - Upgraded eclipse RCP to v2025-03 (v4.35)
+    - Upgraded JRE to v21.0.6
         
 2024-12-06 v7.0.0
 ------------------
 - Important Changes
-    - JMSToolBox v7.x now requires Java 21 to run (jre is  included is the bundle)
+    - JMSToolBox v7.x now requires Java 21 to run (jre is included is the bundle)
 - New features:
     - Artemis 2.x: Added keystore* properties
     - Resolves #184: Oracle AQ: Do not consider queues of type "EXCEPTION_QUEUE" as system queues

@@ -28,7 +28,6 @@ import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.layout.TableColumnLayout;
-import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -413,8 +412,7 @@ public abstract class MessageDialogAbstract extends Dialog {
       btnFormatXML = new Button(cFormat, SWT.CENTER | SWT.NO_FOCUS);
       btnFormatXML.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
       btnFormatXML.setText("{XML}");
-      var boldDescriptor = FontDescriptor.createFrom(btnFormatXML.getFont()).setStyle(SWT.BOLD);
-      var boldFont = boldDescriptor.createFont(btnFormatXML.getDisplay());
+      var boldFont = SWTResourceManager.getFont(btnFormatXML.getFont(), btnFormatXML.getDisplay(), SWT.BOLD);
       btnFormatXML.setFont(boldFont);
       btnFormatXML.setToolTipText("Format as XML");
       btnFormatXML.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -609,20 +607,26 @@ public abstract class MessageDialogAbstract extends Dialog {
 
    private void populateFields() {
 
+      // Properties that accept variables
       if (template.getJmsCorrelationID() != null) {
-         txtCorrelationID.setText(template.getJmsCorrelationID());
+         txtCorrelationID.setText(resolveJmsProperties(template.getJmsCorrelationID()));
       }
 
+      if (template.getJmsType() != null) {
+         txtType.setText(variablesManager.replaceTemplateVariables(template.getJmsType()));
+      }
+
+      if (template.getReplyToDestinationName() != null) {
+         txtReplyToDestinationName.setText(resolveJmsProperties(template.getReplyToDestinationName()));
+      }
+
+      // Other Properties
       if ((template.getDeliveryDelay() != null) && (template.getDeliveryDelay() != 0)) {
          txtDeliveryDelay.setText(template.getDeliveryDelay().toString());
       }
 
       if ((template.getTimeToLive() != null) && (template.getTimeToLive() != 0)) {
          txtTimeToLive.setText(template.getTimeToLive().toString());
-      }
-
-      if (template.getReplyToDestinationName() != null) {
-         txtReplyToDestinationName.setText(template.getReplyToDestinationName());
       }
 
       if ((template.getJmsTimestamp() != null) && (template.getJmsTimestamp() != 0)) {
@@ -639,10 +643,6 @@ public abstract class MessageDialogAbstract extends Dialog {
          }
       } catch (Throwable t) {
          // JMS 2.0+ only..
-      }
-
-      if (template.getJmsType() != null) {
-         txtType.setText(template.getJmsType());
       }
 
       if (template.getPriority() != null) {
@@ -727,6 +727,10 @@ public abstract class MessageDialogAbstract extends Dialog {
 
       tvProperties.setInput(userProperties);
       Utils.resizeTableViewer(tvProperties);
+   }
+
+   protected String resolveJmsProperties(String jmsProp) {
+      return jmsProp;
    }
 
    protected List<JTBProperty> populateProperties(List<JTBProperty> props) {

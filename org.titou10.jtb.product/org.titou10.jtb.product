@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="JMSToolBox" uid="org.titou10.jtb.product" id="org.titou10.jtb.core.product" application="org.eclipse.e4.ui.workbench.swt.E4Application" version="7.1.0.qualifier" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="JMSToolBox" uid="org.titou10.jtb.product" id="org.titou10.jtb.core.product" application="org.eclipse.e4.ui.workbench.swt.E4Application" version="7.2.0.qualifier" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
 
    <configIni use="default">
    </configIni>
@@ -11,7 +11,9 @@
 -clearPersistedState
 -data @user.home/.jtb
       </programArgs>
-      <vmArgs>-Xms512m
+      <vmArgs>--add-opens=java.base/java.nio=ALL-UNNAMED
+--add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+-Xms512m
 -Dorg.jboss.logging.provider=slf4j
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
@@ -36,7 +38,7 @@
 
    <license>
         <text>
-   Copyright (C) 2015 Denis Forveille titou10.titou10@gmail.com
+   Copyright (C) 2025 Denis Forveille titou10.titou10@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -71,7 +73,6 @@ along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
       <plugin id="org.apache.batik.i18n"/>
       <plugin id="org.apache.batik.util"/>
       <plugin id="org.apache.commons.commons-codec"/>
-      <plugin id="org.apache.commons.jxpath"/>
       <plugin id="org.apache.commons.logging"/>
       <plugin id="org.apache.felix.scr"/>
       <plugin id="org.apache.xerces"/>
