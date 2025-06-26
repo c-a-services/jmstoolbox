@@ -1085,6 +1085,7 @@ public abstract class MessageDialogAbstract extends Dialog {
                tableViewer.remove(en);
             }
 
+            tableViewer.refresh();
             composite4.layout();
             Utils.resizeTableViewer(tableViewer);
 
@@ -1253,13 +1254,16 @@ public abstract class MessageDialogAbstract extends Dialog {
             if (selection.isEmpty()) {
                return;
             }
-            for (Object sel : selection.toList()) {
-               var h = (JTBProperty) sel;
-               log.debug("Remove {} from the list", h);
-               userProperties.remove(h);
-               tableViewer.remove(h);
+
+            @SuppressWarnings("unchecked")
+            var selectedItems = (List<JTBProperty>) selection.toList();
+            for (var prop : selectedItems) {
+               log.debug("Remove {} from the list", prop);
+               userProperties.remove(prop);
+               tableViewer.remove(prop);
             }
 
+            tableViewer.refresh();
             parentComposite.layout();
             Utils.resizeTableViewer(tableViewer);
 
