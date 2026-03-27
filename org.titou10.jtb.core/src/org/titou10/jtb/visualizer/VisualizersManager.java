@@ -157,7 +157,7 @@ public class VisualizersManager {
       scriptEngine = new ScriptEngineManager().getEngineByName(JS_LANGUAGE);
       Bindings bindings = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
       bindings.put("polyglot.js.allowHostAccess", true);
-      bindings.put("polyglot.js.allowHostClassLookup", (Predicate<String>) s -> true);
+      bindings.put("polyglot.js.allowHostClassLookup", (Predicate<String>) _ -> true);
 
       compilingEngine = (Compilable) scriptEngine;
       visualizerScriptsHook = new VisualizerScriptsHook(this);
